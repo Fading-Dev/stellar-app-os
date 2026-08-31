@@ -15,7 +15,23 @@ const ALLOWED_ORIGINS = new Set(
 );
 
 function isWhitelistedOrigin(origin: string | null): boolean {
-  return origin !== null && ALLOWED_ORIGINS.has(origin);
+  if (origin === null) return false;
+  if (ALLOWED_ORIGINS.has(origin)) return true;
+
+  try {
+    const hostname = new URL(origin).hostname.toLowerCase();
+    for (const allowed of ALLOWED_ORIGINS) {
+      if (allowed.includes('://')) continue;
+      const domain = allowed.toLowerCase();
+      if (hostname === domain || hostname.endsWith(`.${domain}`)) {
+        return true;
+      }
+    }
+  } catch {
+    return false;
+  }
+
+  return false;
 }
 
 // In-memory tombstone set for GDPR right-to-be-forgotten deletions.
